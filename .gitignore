@@ -1,0 +1,25 @@
+# build results
+bin/
+build/
+obj/
+nuget/
+imgui.ini
+
+# IDE files
+.vs/
+.vshistory/
+.editorconfig
+*.user
+*.vcxproj.filters
+.idea/
+
+# other files
+.old*/
+old/
+tmp/
+temp/
+*.tmp
+*.temp
+logs/
+log/
+*.log
