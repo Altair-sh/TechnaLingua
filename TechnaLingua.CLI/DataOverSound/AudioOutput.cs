@@ -1,4 +1,8 @@
-﻿using ggwave.net;
+﻿using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using ggwave.net;
 using ggwave.net.Native;
 using NAudio.Sdl2;
 using NAudio.Sdl2.Interop;
@@ -11,20 +15,23 @@ public class AudioOutput : IDisposable
 {
     public readonly WaveOutSdlCapabilities DeviceCapabilities;
     public readonly int SamplesPerFrame;
-    public int VolumePercent;
+    public GGWaveProtocolId GGWaveProtocol = GGWaveProtocolId.AUDIBLE_FASTEST;
+    public int VolumePercent = 30;
     
     private readonly WaveOutSdl _outputDevice;
     private readonly WaveFormat _waveFormat;
     private readonly GGWaveInstance _ggWave;
-
-    public AudioOutput(WaveOutSdl outputDevice, WaveOutSdlCapabilities deviceCapabilities, 
-        int samplesPerFrame = 256, int volumePercent = 30)
+    private CancellationTokenSource _stop_cts = new();
+    
+    public PlaybackState PlaybackState => _outputDevice.PlaybackState;
+    
+    
+    public AudioOutput(WaveOutSdl outputDevice, WaveOutSdlCapabilities deviceCapabilities, int samplesPerFrame = 1024)
     {
         _outputDevice = outputDevice;
         DeviceCapabilities = deviceCapabilities;
         SamplesPerFrame = samplesPerFrame;
-        VolumePercent = volumePercent;
-
+        
         var ggWaveParams = GGWaveStatic.getDefaultParameters();
         ggWaveParams.sampleRate = deviceCapabilities.Frequency;
         ggWaveParams.sampleRateOut = deviceCapabilities.Frequency;
@@ -45,40 +52,52 @@ public class AudioOutput : IDisposable
         _ggWave = new GGWaveInstance(ggWaveParams);
     }
     
-    public async Task EncodeAndPlay(Stream dataReadStream)
+    public void EncodeAndPlay(Stream dataReadStream)
     {
-        var playbackStoppedCts = new CancellationTokenSource();
+        if(PlaybackState != PlaybackState.Stopped)
+            throw new Exception("Audio is already playing.");
+        
         _outputDevice.PlaybackStopped += (s, e) =>
         {
             if (e.Exception is not null)
                 throw new AggregateException(e.Exception);
-            playbackStoppedCts.Cancel();
+            
+            // wait until device actually stops playing audio
+            // Thread.Sleep(500);
+            Console.WriteLine("Playback stopped");
         };
 
-        var waveStream = new ProducerConsumerStream();
+        var wavePipe = new System.IO.Pipelines.Pipe();
+        
+        var waveWriter = wavePipe.Writer.AsStream();
+        var encoderThread = new Thread(() =>
+        {
+            Console.WriteLine("Encoding thread start");
+            _ggWave.EncodeStream(
+                dataReadStream,
+                waveWriter,
+                GGWaveProtocol,
+                VolumePercent,
+                waitForMoreInput: true, 
+                ct: _stop_cts.Token);
+            Console.WriteLine("Encoding thread end");
+        });
+        encoderThread.Start();
 
-        var waveWriter = waveStream.GetWriteStream();
-        Console.WriteLine("Encoding");
-        _ggWave.EncodeStream(dataReadStream, waveWriter, 
-            GGWaveProtocolId.AUDIBLE_NORMAL, VolumePercent);
-        Console.WriteLine("Done");
-
-        var waveReader = new RawSourceWaveStream(waveStream.CreateReadStream(), _waveFormat);
+        var waveReader = new RawSourceWaveStream(wavePipe.Reader.AsStream(), _waveFormat);
         Console.WriteLine("Init out device");
         _outputDevice.Init(waveReader);
         Console.WriteLine("Playback started");
         _outputDevice.Play();
-        
-        Console.WriteLine("Waiting for playback stop");
-        while(!playbackStoppedCts.Token.IsCancellationRequested)
-        {
-            // ReSharper disable once MethodSupportsCancellation
-            await Task.Delay(100);
-        }
-        // wait until device actually stops playing audio
-        // ReSharper disable once MethodSupportsCancellation
-        await Task.Delay(500);
-        Console.WriteLine("Playback stopped");
+    }
+
+    public void Stop()
+    {
+        if(PlaybackState == PlaybackState.Stopped)
+            return;
+        _stop_cts.Cancel();
+        _stop_cts = new CancellationTokenSource();
+        _outputDevice.Stop();
     }
 
     public void Dispose()

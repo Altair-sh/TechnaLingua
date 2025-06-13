@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using NAudio.Sdl2;
 using NAudio.Sdl2.Interop;
 using NAudio.Sdl2.Structures;
@@ -34,24 +35,29 @@ class Program
         return (outputDevice, deviceCapabilities);
     }
 
-    static string GetTextInput() => "Превед медвед";
 
-    static async Task Main(string[] args)
+    static void Main(string[] args)
     {
         SDL.SDL_GetVersion(out var sdlVersion);
         Console.WriteLine($"SDL Version: {sdlVersion.major}.{sdlVersion.minor}.{sdlVersion.patch}");
         
-        var text = GetTextInput();
         var utf8WithoutBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier:false, throwOnInvalidBytes: true);
-        var dataBytes = utf8WithoutBom.GetBytes(text);
-        await using var inputDataStream = new ProducerConsumerStream();
-        inputDataStream.GetWriteStream().Write(dataBytes, 0, dataBytes.Length);
+        using var inputDataStream = new ProducerConsumerStream();
+        var dataWriteStream = inputDataStream.GetWriteStream();
         var dataReadStream = inputDataStream.CreateReadStream();
 
         var (outputDevice, outputDeviceCapabilities) = GetOutputDevice();
-        using (AudioOutput audioOutput = new(outputDevice, outputDeviceCapabilities))
+        using AudioOutput audioOutput = new(outputDevice, outputDeviceCapabilities);
+        audioOutput.EncodeAndPlay(dataReadStream);
+        
+        Console.WriteLine("Write text:");
+        while (true)
         {
-            await audioOutput.EncodeAndPlay(dataReadStream);
+            string? line = Console.ReadLine();
+            if(string.IsNullOrWhiteSpace(line))
+                continue;
+            dataWriteStream.Write(utf8WithoutBom.GetBytes(line));
         }
+        // ReSharper disable once FunctionNeverReturns
     }
 }

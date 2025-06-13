@@ -1,4 +1,8 @@
-﻿namespace TechnaLingua.CLI;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+
+namespace TechnaLingua.CLI;
 
 class ProducerConsumerStream : IDisposable, IAsyncDisposable
 {
