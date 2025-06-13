@@ -2,9 +2,9 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace TechnaLingua.CLI;
+namespace TechnaLingua;
 
-class ProducerConsumerStream : IDisposable, IAsyncDisposable
+public class ProducerConsumerStream : IDisposable, IAsyncDisposable
 {
     private readonly MemoryStream _innerStream;
     private WriteStream _writeStream;

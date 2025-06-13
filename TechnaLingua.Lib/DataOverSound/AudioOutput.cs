@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using ggwave.net;
 using ggwave.net.Native;
 using NAudio.Sdl2;
@@ -9,14 +8,14 @@ using NAudio.Sdl2.Interop;
 using NAudio.Sdl2.Structures;
 using NAudio.Wave;
 
-namespace TechnaLingua.CLI.DataOverSound;
+namespace TechnaLingua.DataOverSound;
 
 public class AudioOutput : IDisposable
 {
     public readonly WaveOutSdlCapabilities DeviceCapabilities;
     public readonly int SamplesPerFrame;
     public GGWaveProtocolId GGWaveProtocol = GGWaveProtocolId.AUDIBLE_FASTEST;
-    public int VolumePercent = 30;
+    public int VolumePercent = 50;
     
     private readonly WaveOutSdl _outputDevice;
     private readonly WaveFormat _waveFormat;

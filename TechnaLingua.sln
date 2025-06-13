@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechnaLingua.CLI", "TechnaLingua.CLI\TechnaLingua.CLI.csproj", "{373EC629-90FB-4B3D-B873-E8FDBAE1596D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechnaLingua.Lib", "TechnaLingua.Lib\TechnaLingua.Lib.csproj", "{2AEBD4F9-49BB-4C5F-ABB9-9BCED09797F7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{373EC629-90FB-4B3D-B873-E8FDBAE1596D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{373EC629-90FB-4B3D-B873-E8FDBAE1596D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{373EC629-90FB-4B3D-B873-E8FDBAE1596D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2AEBD4F9-49BB-4C5F-ABB9-9BCED09797F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2AEBD4F9-49BB-4C5F-ABB9-9BCED09797F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2AEBD4F9-49BB-4C5F-ABB9-9BCED09797F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2AEBD4F9-49BB-4C5F-ABB9-9BCED09797F7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

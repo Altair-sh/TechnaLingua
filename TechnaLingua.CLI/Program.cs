@@ -3,7 +3,7 @@ using System.Text;
 using NAudio.Sdl2;
 using NAudio.Sdl2.Interop;
 using NAudio.Sdl2.Structures;
-using TechnaLingua.CLI.DataOverSound;
+using TechnaLingua.DataOverSound;
 
 namespace TechnaLingua.CLI;
 
